@@ -1,0 +1,20 @@
+{
+  "feed_name": "transaction_stream_anonymized",
+  "feed_type": "stream",
+  "ksqldb_source": "transaction_stream_anonymized",
+  "description": "Stream anonymisé avec conversion EUR pour conformité RGPD",
+  "partitioning": {
+    "type": "date",
+    "columns": ["year", "month", "day"]
+  },
+  "storage_mode": "append",
+  "format": "parquet",
+  "retention_days": 730,
+  "enabled": true,
+  "security": {
+    "anonymized": true,
+    "gdpr_compliant": true
+  },
+  "created_at": "2025-01-15T10:00:00Z",
+  "updated_at": "2025-01-15T10:00:00Z"
+}

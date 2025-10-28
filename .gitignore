@@ -1,0 +1,53 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+env/
+venv/
+ENV/
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+
+# Data Lake
+data_lake/streams/*/year=*/
+data_lake/tables/*/version=*/
+data_lake/logs/*.log
+*.parquet
+
+# Métadonnées (garder la structure mais pas les données)
+!data_lake/streams/*/_metadata.json
+!data_lake/tables/*/_metadata.json
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Environnement
+.env
+.env.local
+
+# Rapports
+*.csv
+data_lake_report.*

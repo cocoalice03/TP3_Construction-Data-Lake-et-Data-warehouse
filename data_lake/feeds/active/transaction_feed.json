@@ -1,0 +1,30 @@
+{
+  "feed_name": "transaction_feed",
+  "feed_type": "stream",
+  "ksqldb_source": "transaction_stream",
+  "description": "Feed principal des transactions avec données brutes",
+  "partitioning": {
+    "type": "date",
+    "columns": [
+      "year",
+      "month",
+      "day"
+    ]
+  },
+  "storage_mode": "append",
+  "format": "parquet",
+  "retention_days": 365,
+  "enabled": true,
+  "created_at": "2025-01-15T10:00:00Z",
+  "updated_at": "2025-01-15T10:00:00Z",
+  "metadata": {
+    "owner": "data-team",
+    "priority": "high",
+    "sla": "24h",
+    "tags": [
+      "transactions",
+      "raw-data",
+      "production"
+    ]
+  }
+}

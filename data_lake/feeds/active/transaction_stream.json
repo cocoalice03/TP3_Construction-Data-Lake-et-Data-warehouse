@@ -1,0 +1,16 @@
+{
+  "feed_name": "transaction_stream",
+  "feed_type": "stream",
+  "ksqldb_source": "transaction_stream",
+  "description": "Stream principal avec données brutes des transactions",
+  "partitioning": {
+    "type": "date",
+    "columns": ["year", "month", "day"]
+  },
+  "storage_mode": "append",
+  "format": "parquet",
+  "retention_days": 365,
+  "enabled": true,
+  "created_at": "2025-01-15T10:00:00Z",
+  "updated_at": "2025-01-15T10:00:00Z"
+}

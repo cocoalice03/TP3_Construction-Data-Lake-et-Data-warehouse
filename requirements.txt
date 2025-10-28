@@ -1,0 +1,14 @@
+# Dépendances pour le Data Lake
+pandas>=2.0.0
+pyarrow>=12.0.0
+requests>=2.31.0
+
+# Dépendances pour le Data Warehouse MySQL
+mysql-connector-python>=8.0.0
+
+# Dépendances pour Kafka
+kafka-python>=2.0.2
+
+# Orchestration (Apache Beam + schedule)
+apache-beam[gcp]>=2.50.0
+schedule>=1.2.0
