@@ -1,8 +1,4 @@
-"""
-Configuration Kafka pour les Consumers
-"""
 from pathlib import Path
-from typing import Dict, List
 
 # Configuration Kafka
 KAFKA_CONFIG = {
@@ -97,8 +93,8 @@ KAFKA_TOPICS = {
 
 # Configuration du batch processing
 BATCH_CONFIG = {
-    "batch_size": 1000,  # Nombre de messages avant flush
-    "batch_timeout_seconds": 30,  # Timeout avant flush
+    "batch_size": 200,  # Nombre de messages avant flush (simplifié)
+    "batch_timeout_seconds": 10,  # Timeout avant flush (simplifié)
     "max_retries": 3,
     "retry_delay_seconds": 5
 }
@@ -124,8 +120,8 @@ LOG_FORMAT = "%(asctime)s - %(name)s - %(levelname)s - %(message)s"
 LOG_LEVEL = "INFO"
 
 
-def get_all_topics() -> List[str]:
-    """Retourne la liste de tous les topics Kafka"""
+def get_all_topics():
+    # Retourne la liste de tous les topics Kafka
     topics = []
     for stream in KAFKA_TOPICS["streams"]:
         if stream["enabled"]:
@@ -136,8 +132,8 @@ def get_all_topics() -> List[str]:
     return topics
 
 
-def get_topic_config(topic_name: str) -> Dict:
-    """Retourne la configuration d'un topic spécifique"""
+def get_topic_config(topic_name):
+    # Retourne la configuration d'un topic spécifique
     # Chercher dans les streams
     for stream in KAFKA_TOPICS["streams"]:
         if stream["topic"] == topic_name:
@@ -151,11 +147,8 @@ def get_topic_config(topic_name: str) -> Dict:
     return None
 
 
-def get_topics_for_destination(destination: str) -> List[str]:
-    """
-    Retourne les topics pour une destination spécifique
-    destination: 'data_lake', 'data_warehouse', ou 'both'
-    """
+def get_topics_for_destination(destination):
+    # Retourne les topics pour une destination spécifique
     topics = []
     
     for stream in KAFKA_TOPICS["streams"]:
@@ -169,22 +162,4 @@ def get_topics_for_destination(destination: str) -> List[str]:
     return topics
 
 
-# Mapping des schémas de messages Kafka
-MESSAGE_SCHEMAS = {
-    "transaction_stream": {
-        "fields": ["transaction_id", "user_id", "amount", "currency", "timestamp", "payment_method", "product_id"],
-        "key_field": "transaction_id"
-    },
-    "user_transaction_summary": {
-        "fields": ["user_id", "transaction_type", "total_amount", "transaction_count", "avg_amount", "min_amount", "max_amount"],
-        "key_field": "user_id"
-    },
-    "payment_method_totals": {
-        "fields": ["payment_method", "total_amount", "transaction_count", "avg_amount"],
-        "key_field": "payment_method"
-    },
-    "product_purchase_counts": {
-        "fields": ["product_id", "product_name", "product_category", "purchase_count", "total_revenue", "avg_price"],
-        "key_field": "product_id"
-    }
-}
+##

@@ -1,6 +1,3 @@
-"""
-Kafka Producer - Envoi de messages vers Kafka avec débit et volume configurables
-"""
 import argparse
 import json
 import logging
@@ -9,7 +6,6 @@ import string
 import sys
 import time
 from datetime import datetime
-from typing import Dict, Any
 
 from kafka import KafkaProducer
 
@@ -23,11 +19,11 @@ logging.basicConfig(
 logger = logging.getLogger("kafka_producer")
 
 
-def _random_id(prefix: str, n: int = 8) -> str:
+def _random_id(prefix, n=8):
     return f"{prefix}_" + "".join(random.choices(string.ascii_letters + string.digits, k=n))
 
 
-def _build_sample_payload(topic: str, i: int) -> Dict[str, Any]:
+def _build_sample_payload(topic, i):
     now = datetime.utcnow().isoformat() + "Z"
     # Échantillons minimaux selon nos topics connus; generique sinon
     if topic == "transaction_stream":
@@ -79,8 +75,7 @@ def _build_sample_payload(topic: str, i: int) -> Dict[str, Any]:
         return {"id": _random_id("evt"), "topic": topic, "i": i, "timestamp": now}
 
 
-def produce_messages(topic: str, num_messages: int, rate_per_sec: int) -> None:
-    """Envoie num_messages sur topic à un débit de rate_per_sec messages/s"""
+def produce_messages(topic, num_messages, rate_per_sec):
     producer = KafkaProducer(
         bootstrap_servers=KAFKA_CONFIG.get("bootstrap_servers", ["localhost:9092"]),
         value_serializer=lambda v: json.dumps(v).encode("utf-8"),
@@ -112,10 +107,10 @@ def main():
     parser = argparse.ArgumentParser(description="Kafka Producer configurable")
     parser.add_argument("--topic", required=True, help="Topic Kafka cible")
     parser.add_argument(
-        "--messages", type=int, default=1000, help="Nombre de messages à envoyer"
+        "--messages", type=int, default=100, help="Nombre de messages à envoyer"
     )
     parser.add_argument(
-        "--rate", type=int, default=500, help="Débit en messages/seconde"
+        "--rate", type=int, default=50, help="Débit en messages/seconde"
     )
 
     args = parser.parse_args()

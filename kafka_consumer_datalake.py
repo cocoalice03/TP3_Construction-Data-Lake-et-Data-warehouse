@@ -1,13 +1,8 @@
-"""
-Kafka Consumer pour le Data Lake (Parquet)
-Consomme les messages Kafka et les écrit dans le Data Lake au format Parquet
-"""
 import json
 import logging
 import sys
 from datetime import datetime, date
 from pathlib import Path
-from typing import List, Dict, Any
 import pandas as pd
 import pyarrow as pa
 import pyarrow.parquet as pq
@@ -31,25 +26,14 @@ logging.basicConfig(
     level=getattr(logging, LOG_LEVEL),
     format=LOG_FORMAT,
     handlers=[
-        logging.StreamHandler(sys.stdout),
-        logging.FileHandler(
-            LOGS_DIR / f"kafka_consumer_datalake_{datetime.now().strftime('%Y%m')}.log"
-        )
+        logging.StreamHandler(sys.stdout)
     ]
 )
 logger = logging.getLogger(__name__)
 
 
 class DataLakeKafkaConsumer:
-    """Consumer Kafka pour le Data Lake"""
-    
-    def __init__(self, topics: List[str] = None):
-        """
-        Initialise le consumer Kafka pour le Data Lake
-        
-        Args:
-            topics: Liste des topics à consommer (None = tous les topics data_lake)
-        """
+    def __init__(self, topics=None):
         ensure_directories()
         
         # Déterminer les topics à consommer
@@ -81,7 +65,6 @@ class DataLakeKafkaConsumer:
         logger.info("✓ Consumer Kafka initialisé")
     
     def consume(self):
-        """Consomme les messages Kafka en continu"""
         logger.info("🚀 Démarrage de la consommation des messages Kafka")
         
         try:
@@ -104,7 +87,6 @@ class DataLakeKafkaConsumer:
             logger.info("Consumer Kafka fermé")
     
     def process_message(self, message):
-        """Traite un message Kafka"""
         topic = message.topic
         value = message.value
         
@@ -120,8 +102,7 @@ class DataLakeKafkaConsumer:
         if should_flush:
             self.flush_buffer(topic)
     
-    def flush_buffer(self, topic: str):
-        """Écrit le buffer d'un topic dans le Data Lake"""
+    def flush_buffer(self, topic):
         if not self.message_buffers[topic]:
             return
         
@@ -158,8 +139,7 @@ class DataLakeKafkaConsumer:
             logger.error(f"Erreur lors du flush du buffer pour {topic}: {e}")
             # En cas d'erreur, on garde les messages dans le buffer pour retry
     
-    def write_stream_data(self, topic: str, df: pd.DataFrame, config: dict):
-        """Écrit les données d'un stream dans le Data Lake"""
+    def write_stream_data(self, topic, df, config):
         # Partitionnement par date
         today = date.today()
         partition_path = get_date_partition_path(
@@ -188,8 +168,7 @@ class DataLakeKafkaConsumer:
         
         logger.info(f"✓ Stream {topic} écrit: {file_path}")
     
-    def write_table_data(self, topic: str, df: pd.DataFrame, config: dict):
-        """Écrit les données d'une table dans le Data Lake"""
+    def write_table_data(self, topic, df, config):
         # Déterminer la prochaine version
         base_path = TABLES_DIR / topic
         base_path.mkdir(parents=True, exist_ok=True)
@@ -228,8 +207,7 @@ class DataLakeKafkaConsumer:
         # Nettoyage des anciennes versions si nécessaire
         self.cleanup_old_versions(base_path, retention_versions=7)
     
-    def cleanup_old_versions(self, base_path: Path, retention_versions: int = 7):
-        """Supprime les anciennes versions au-delà de la rétention"""
+    def cleanup_old_versions(self, base_path: Path, retention_versions=7):
         version_dirs = sorted(
             base_path.glob("version=v*"),
             key=lambda p: int(p.name.replace("version=v", ""))
@@ -242,14 +220,12 @@ class DataLakeKafkaConsumer:
                 shutil.rmtree(old_version)
     
     def flush_all_buffers(self):
-        """Flush tous les buffers avant fermeture"""
         logger.info("Flush de tous les buffers...")
         for topic in self.topics:
             self.flush_buffer(topic)
 
 
 def main():
-    """Point d'entrée principal"""
     import argparse
     
     parser = argparse.ArgumentParser(

@@ -1,12 +1,7 @@
-"""
-Kafka Consumer pour le Data Warehouse (MySQL)
-Consomme les messages Kafka et les insère dans MySQL
-"""
 import json
 import logging
 import sys
 from datetime import datetime, date
-from typing import List, Dict, Any, Optional
 import pandas as pd
 import mysql.connector
 from mysql.connector import Error
@@ -25,26 +20,14 @@ logging.basicConfig(
     level=getattr(logging, LOG_LEVEL),
     format=LOG_FORMAT,
     handlers=[
-        logging.StreamHandler(sys.stdout),
-        logging.FileHandler(
-            LOGS_DIR / f"kafka_consumer_warehouse_{datetime.now().strftime('%Y%m')}.log"
-        )
+        logging.StreamHandler(sys.stdout)
     ]
 )
 logger = logging.getLogger(__name__)
 
 
 class WarehouseKafkaConsumer:
-    """Consumer Kafka pour le Data Warehouse MySQL"""
-    
-    def __init__(self, topics: List[str] = None, mysql_password: str = ""):
-        """
-        Initialise le consumer Kafka pour le Data Warehouse
-        
-        Args:
-            topics: Liste des topics à consommer (None = tous les topics warehouse)
-            mysql_password: Mot de passe MySQL
-        """
+    def __init__(self, topics=None, mysql_password=""):
         # Déterminer les topics à consommer (uniquement les tables)
         if topics is None:
             self.topics = [
@@ -90,7 +73,6 @@ class WarehouseKafkaConsumer:
         logger.info("✓ Consumer Kafka initialisé")
     
     def connect_mysql(self):
-        """Établit la connexion à MySQL"""
         try:
             self.mysql_connection = mysql.connector.connect(**self.mysql_config)
             self.mysql_cursor = self.mysql_connection.cursor(dictionary=True)
@@ -100,7 +82,6 @@ class WarehouseKafkaConsumer:
             raise
     
     def disconnect_mysql(self):
-        """Ferme la connexion à MySQL"""
         if self.mysql_cursor:
             self.mysql_cursor.close()
         if self.mysql_connection:
@@ -108,7 +89,6 @@ class WarehouseKafkaConsumer:
         logger.info("Connexion à MySQL fermée")
     
     def consume(self):
-        """Consomme les messages Kafka en continu"""
         logger.info("🚀 Démarrage de la consommation des messages Kafka")
         
         try:
@@ -132,7 +112,6 @@ class WarehouseKafkaConsumer:
             logger.info("Consumer Kafka fermé")
     
     def process_message(self, message):
-        """Traite un message Kafka"""
         topic = message.topic
         value = message.value
         
@@ -148,8 +127,7 @@ class WarehouseKafkaConsumer:
         if should_flush:
             self.flush_buffer(topic)
     
-    def flush_buffer(self, topic: str):
-        """Insère le buffer d'un topic dans MySQL"""
+    def flush_buffer(self, topic):
         if not self.message_buffers[topic]:
             return
         
@@ -193,8 +171,7 @@ class WarehouseKafkaConsumer:
             logger.error(f"Erreur lors du flush du buffer pour {topic}: {e}")
             self.mysql_connection.rollback()
     
-    def upsert_user(self, user_data: dict):
-        """Insert ou update un utilisateur dans dim_users"""
+    def upsert_user(self, user_data):
         query = """
         INSERT INTO dim_users (user_id, user_name, user_email, user_country, user_city)
         VALUES (%(user_id)s, %(user_name)s, %(user_email)s, %(user_country)s, %(user_city)s)
@@ -212,8 +189,7 @@ class WarehouseKafkaConsumer:
             logger.error(f"Erreur lors de l'upsert utilisateur: {e}")
             raise
     
-    def get_payment_method_id(self, payment_method_name: str) -> Optional[int]:
-        """Récupère l'ID d'une méthode de paiement"""
+    def get_payment_method_id(self, payment_method_name):
         query = "SELECT payment_method_id FROM dim_payment_methods WHERE payment_method_name = %s"
         
         try:
@@ -224,8 +200,7 @@ class WarehouseKafkaConsumer:
             logger.error(f"Erreur lors de la récupération de la méthode de paiement: {e}")
             return None
     
-    def insert_user_transaction_summary(self, df: pd.DataFrame):
-        """Insère les résumés de transactions utilisateur"""
+    def insert_user_transaction_summary(self, df):
         query = """
         INSERT INTO fact_user_transaction_summary (
             user_id, transaction_type, total_amount, transaction_count,
@@ -274,8 +249,7 @@ class WarehouseKafkaConsumer:
         
         self.mysql_connection.commit()
     
-    def insert_user_transaction_summary_eur(self, df: pd.DataFrame):
-        """Insère les résumés de transactions en EUR"""
+    def insert_user_transaction_summary_eur(self, df):
         query = """
         INSERT INTO fact_user_transaction_summary_eur (
             user_id, transaction_type, total_amount_eur, transaction_count,
@@ -318,8 +292,7 @@ class WarehouseKafkaConsumer:
         
         self.mysql_connection.commit()
     
-    def insert_payment_method_totals(self, df: pd.DataFrame):
-        """Insère les totaux par méthode de paiement"""
+    def insert_payment_method_totals(self, df):
         query = """
         INSERT INTO fact_payment_method_totals (
             payment_method_id, payment_method_name, total_amount,
@@ -356,8 +329,7 @@ class WarehouseKafkaConsumer:
         
         self.mysql_connection.commit()
     
-    def insert_product_purchase_counts(self, df: pd.DataFrame):
-        """Insère les compteurs d'achats par produit"""
+    def insert_product_purchase_counts(self, df):
         query = """
         INSERT INTO fact_product_purchase_counts (
             product_id, product_name, product_category, purchase_count,
@@ -391,14 +363,12 @@ class WarehouseKafkaConsumer:
         self.mysql_connection.commit()
     
     def flush_all_buffers(self):
-        """Flush tous les buffers avant fermeture"""
         logger.info("Flush de tous les buffers...")
         for topic in self.topics:
             self.flush_buffer(topic)
 
 
 def main():
-    """Point d'entrée principal"""
     import argparse
     
     parser = argparse.ArgumentParser(
